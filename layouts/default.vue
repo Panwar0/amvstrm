@@ -85,7 +85,7 @@ const gotoRandomID = async () => {
       </ClientOnly>
     </v-main>
     <v-footer app height="auto" dense absolute>
-      <p>amvstrm Cambodia © Copyright {{ new Date().getFullYear() }}</p>
+      <p>aniwatch © Copyright {{ new Date().getFullYear() }}</p>
       <v-spacer />
       <v-btn
         :prepend-icon="
