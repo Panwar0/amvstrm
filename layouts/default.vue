@@ -61,6 +61,7 @@ const gotoRandomID = async () => {
             <v-icon icon="mdi-help" />
           </template>
         </v-list-item>
+       </v-list>
     </v-navigation-drawer>
 
     <v-app-bar absolute="">
