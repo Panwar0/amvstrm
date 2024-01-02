@@ -1,14 +1,14 @@
 export default defineNuxtConfig({
   app: {
     head: {
-      titleTemplate: "%s - amvstrm",
-      title: "amvstrm",
+      titleTemplate: "%s - aniwatch",
+      title: "aniwatch",
       meta: [
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         {
           name: "description",
-          content: "amvstrm - A streaming service for weebo...",
+          content: "aniwatch - A streaming service for weebo...",
         },
         {
           name: "keywords",
