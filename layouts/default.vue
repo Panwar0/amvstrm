@@ -61,12 +61,6 @@ const gotoRandomID = async () => {
             <v-icon icon="mdi-help" />
           </template>
         </v-list-item>
-        <v-list-item title="Github" href="https://github.com/amvstrm/amvstrm">
-          <template #append>
-            <v-icon icon="mdi-github" />
-          </template>
-        </v-list-item>
-      </v-list>
     </v-navigation-drawer>
 
     <v-app-bar absolute="">
