@@ -13,7 +13,7 @@
       <h1>More</h1>
     </div>
     <v-list lines="two">
-      <v-list-item title="amvstrm's PWA mode" subtitle="Version amvN3 (Nuxt 3)">
+      <v-list-item title="Aniwatch's PWA mode" subtitle="Version amvN3 (Nuxt 3)">
         <template #prepend>
           <img
             src="/icon.png"
@@ -22,8 +22,8 @@
         </template>
       </v-list-item>
       <v-list-item
-        title="amvstrm"
-        :subtitle="new Date().getFullYear() + ' © amvstrm'"
+        title="Aniwatch"
+        :subtitle="new Date().getFullYear() + ' © Aniwatch'"
       />
     </v-list>
     <v-divider class="my-4"></v-divider>
