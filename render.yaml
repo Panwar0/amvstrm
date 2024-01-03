@@ -12,7 +12,7 @@ services:
       - key: NITRO_PRESET
         value: render_com
       - key: API_URL
-        value: "https://proanipvt.vercel.app"
+        value: "https://proanipvt.vercel.app/api/v2"
       - key: VERSION
         value: "v2"
       - key: DISCUS_ID
