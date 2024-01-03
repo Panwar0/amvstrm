@@ -12,7 +12,7 @@ services:
       - key: NITRO_PRESET
         value: render_com
       - key: API_URL
-        value: "https://pvtapi.vercel.app/"
+        value: "https://propvtapi.vercel.app/"
       - key: VERSION
         value: "v2"
       - key: DISCUS_ID
