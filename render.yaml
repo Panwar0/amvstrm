@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: amvstrmn3
+    name: Aniwatch
     env: node
     branch: master
     plan: free
@@ -12,7 +12,7 @@ services:
       - key: NITRO_PRESET
         value: render_com
       - key: API_URL
-        value: "https://proanipvt.vercel.app/api/v2/"
+        value: "https://api-one-sable.vercel.app"
       - key: VERSION
         value: "v2"
       - key: DISCUS_ID
