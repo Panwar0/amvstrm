@@ -267,7 +267,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      API_URL: process.env.API_URL || "https://api-one-sable.vercel.app",
+      API_URL: process.env.API_URL || "https://oooooopvtgptho.vercel.app",
       version: process.env.VERSION || "v2",
       posthogPublicKey: process.env.POSTHOG_PK || "",
       posthogHost: process.env.POSTHOG_HOST || "https://app.posthog.com",
