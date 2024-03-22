@@ -1,17 +1,6 @@
-<script setup>
-const env = useRuntimeConfig();
-const randomBTNstate = ref(false);
-const gotoRandomID = async () => {
-  const { data } = useFetch(
-    `${env.public.API_URL}/api/${env.public.version}/random`
-  );
-  navigateTo(`/anime/${data.value.id[0]}`);
-};
-
-</script>
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" temporary="">
+    <v-navigation-drawer v-model="drawer" temporary="" class="rounded-ui">
       <v-list>
         <v-list-item>
           <NuxtImg
@@ -56,10 +45,20 @@ const gotoRandomID = async () => {
             <v-icon icon="mdi-information" />
           </template>
         </v-list-item>
-       </v-list>
+        <v-list-item title="Help" href="https://amvdocs.pages.dev/help">
+          <template #append>
+            <v-icon icon="mdi-help" />
+          </template>
+        </v-list-item>
+        <v-list-item title="Github" href="https://github.com/amvstrm/amvstrm">
+          <template #append>
+            <v-icon icon="mdi-github" />
+          </template>
+        </v-list-item>
+      </v-list>
     </v-navigation-drawer>
 
-    <v-app-bar absolute="">
+    <v-app-bar absolute="" class="rounded-ui">
       <v-col>
         <NuxtLink to="/">
           <NuxtImg
@@ -74,14 +73,14 @@ const gotoRandomID = async () => {
       <v-spacer />
       <v-app-bar-nav-icon @click="drawer = !drawer" />
     </v-app-bar>
-    <v-main>
+    <v-main class="rounded-ui">
       <slot />
       <ClientOnly>
         <AppCookieBanner />
       </ClientOnly>
     </v-main>
-    <v-footer app height="auto" dense absolute>
-      <p>aniwatch © Copyright {{ new Date().getFullYear() }}</p>
+    <v-footer app height="auto" dense absolute class="rounded-ui">
+      <p>amvstrm Cambodia © Copyright {{ new Date().getFullYear() }}</p>
       <v-spacer />
       <v-btn
         :prepend-icon="
@@ -94,11 +93,26 @@ const gotoRandomID = async () => {
     </v-footer>
   </v-app>
 </template>
-<script>
+
+<script setup>
+const env = useRuntimeConfig();
+const randomBTNstate = ref(false);
+const gotoRandomID = async () => {
+  const { data } = useFetch(
+    `${env.public.API_URL}/api/${env.public.version}/random`
+  );
+  navigateTo(`/anime/${data.value.id[0]}`);
+};
+
 export default {
   data: () => ({
     drawer: null,
   }),
 };
 </script>
-<style scoped></style>
+
+<style scoped>
+.rounded-ui {
+  border-radius: 20px;
+}
+</style>
