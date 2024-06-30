@@ -1,0 +1,225 @@
+import random
+import re
+from collections import Counter
+from nltk.corpus import stopwords, wordnet
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.stem import WordNetLemmatizer
+import nltk
+from transformers import pipeline, set_seed
+import spacy
+import language_tool_python
+import gensim
+from gensim.models import Word2Vec
+from gensim.models.phrases import Phraser, Phrases
+from fuzzywuzzy import fuzz
+import os
+
+# Download required NLTK modules
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
+
+# Load the AI-generated text from the 'ai.txt' file
+with open('ai.txt', 'r') as file:
+    ai_text = file.read()
+
+# Check if the Word2Vec model file exists
+if os.path.exists('word2vec.model'):
+    # Load the existing model
+    word2vec_model = Word2Vec.load('word2vec.model')
+else:
+    # Train a new model
+    sentences = [text.split() for text in ai_text.split('\n')]
+    word2vec_model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, workers=4)
+    word2vec_model.save('word2vec.model')
+
+# Load the spaCy English language model
+try:
+    nlp = spacy.load("en_core_web_sm")
+except IOError:
+    print("Downloading spaCy English language model...")
+    spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
+
+# Load the LanguageTool grammar checker
+try:
+    tool = language_tool_python.LanguageTool('en-US')
+except ModuleNotFoundError:
+    print("LanguageTool requires Java to be installed. Please install Java and try again.")
+    exit(1)
+
+# Load the trained Word2Vec model
+phraser = Phraser(Phrases(ai_text.split()))
+
+# Define a list of contractions and their expansions
+contractions = {
+}
+
+# Define a function to expand contractions
+def expand_contractions(text):
+    for contraction, expansion in contractions.items():
+        text = text.replace(contraction, expansion)
+    return text
+
+# Define a function to introduce typos and grammatical errors
+def introduce_errors(text):
+    # Split the text into sentences
+    sentences = sent_tokenize(text)
+    
+    # Introduce errors in each sentence
+    for i, sentence in enumerate(sentences):
+        # Randomly decide whether to introduce an error
+        if random.random() < 0.2:
+            # Randomly choose the type of error to introduce
+            error_type = random.choice(['typo', 'grammar', 'word_choice'])
+            
+            if error_type == 'typo':
+                # Introduce a typo
+                words = word_tokenize(sentence)
+                word_index = random.randint(0, len(words) - 1)
+                word = words[word_index]
+                if len(word) > 2:
+                    new_word = word[0] + random.choice(word[1:-1]) + word[-1]
+                    words[word_index] = new_word
+                sentence = ' '.join(words)
+            elif error_type == 'grammar':
+                # Introduce a grammatical error
+                doc = nlp(sentence)
+                for token in doc:
+                    if token.pos_ in ['VERB', 'NOUN', 'PRON']:
+                        if random.random() < 0.3:
+                            token.tag_ = random.choice(['VBZ', 'VBD', 'VBP', 'NN', 'NNS', 'PRP'])
+                sentence = doc.text
+                matches = tool.check(sentence)
+                if matches:
+                    sentence = tool.correct(sentence)
+            elif error_type == 'word_choice':
+                # Introduce an incorrect word choice
+                words = word_tokenize(sentence)
+                word_index = random.randint(0, len(words) - 1)
+                word = words[word_index]
+                if word.lower() not in stopwords.words('english'):
+                    new_word = get_similar_word(word, ai_text, word2vec_model, phraser)
+                    words[word_index] = new_word
+                sentence = ' '.join(words)
+        
+        sentences[i] = sentence
+    
+    # Combine the modified sentences back into a single text
+    return '. '.join(sentences) + '.'
+
+def get_similar_word(word, text, word2vec_model, phraser):
+    lemmatizer = WordNetLemmatizer()
+    lemma = lemmatizer.lemmatize(word)
+    synsets = wordnet.synsets(lemma)
+    if synsets:
+        similar_words = [lemmatizer.lemmatize(l.name().split('.')[0]) for s in synsets for l in s.lemmas()]
+        similar_words = list(set(similar_words) - set([word.lower()]))
+        if similar_words:
+            return random.choice(similar_words)
+    
+    # Use Word2Vec to find similar words
+    try:
+        similar_words = word2vec_model.wv.most_similar(positive=[word], topn=3)
+        similar_words = [w[0] for w in similar_words]
+        return random.choice(similar_words)
+    except KeyError:
+        pass
+    
+    # Use Phraser to find similar phrases
+    try:
+        similar_phrases = phraser[word_tokenize(text)]
+        return random.choice(similar_phrases)
+    except KeyError:
+        pass
+    
+    return random.choice(list(set(word_tokenize(text)) - set(stopwords.words('english'))))
+
+# Expand contractions in the AI-generated text
+humanized_text = expand_contractions(ai_text)
+
+# Introduce typos, grammatical errors, and word choice errors
+humanized_text = introduce_errors(humanized_text)
+
+# Introduce variations in sentence structure
+sentences = sent_tokenize(humanized_text)
+for i, sentence in enumerate(sentences):
+    if random.random() < 0.05:
+        # Rearrange the sentence structure
+        words = word_tokenize(sentence)
+        random.shuffle(words)
+        sentences[i] = ' '.join(words)
+    elif random.random() < 0.025:
+        # Combine short sentences
+        if i < len(sentences) - 1 and len(sentence.split()) < 10 and len(sentences[i+1].split()) < 10:
+            sentences[i] = sentences[i] + ' ' + sentences[i+1]
+            del sentences[i+1]
+    elif random.random() < 0.025:
+        # Split long sentences
+        if len(sentence.split()) > 20:
+            new_sentences = re.split(r'[,;]', sentence)
+            sentences[i:i+1] = new_sentences
+
+# Introduce variations in word usage
+word_counts = Counter(word_tokenize(humanized_text))
+common_words = [word for word, count in word_counts.most_common(20) if word.lower() not in stopwords.words('english')]
+for i, sentence in enumerate(sentences):
+    if random.random() < 0.05:
+        # Replace a common word with a less common synonym
+        words = word_tokenize(sentence)
+        for j, word in enumerate(words):
+            if word.lower() in common_words and random.random() < 0.1:
+                new_word = get_similar_word(word, ai_text, word2vec_model, phraser)
+                words[j] = new_word
+        sentences[i] = ' '.join(words)
+
+# Introduce natural language generation
+set_seed(42)  # Set a seed for reproducibility
+nlg = pipeline('text-generation', model='gpt2')
+for i in range(len(sentences)):
+    if random.random() < 0.2:
+        new_sentence = nlg(sentences[i], max_length=len(sentences[i]) + 10, num_return_sequences=1)[0]['generated_text']
+        sentences[i] = new_sentence
+
+# Introduce more human-like elements
+for i, sentence in enumerate(sentences):
+    if random.random() < 0.1:
+        # Add a personal anecdote or opinion
+        anecdotes = ["You know, I've always thought that...", "In my experience, ...", "Reminds me of the time when...", "I've noticed that..."]
+        sentence = random.choice(anecdotes) + ' ' + sentence
+        sentences[i] = sentence
+    elif random.random() < 0.1:
+        # Reference a real-world event or context
+        contexts = ["With everything going on in the world right now, ...", "Just saw the news about...", "Speaking of the weather we've been having, ...", "As we approach the holiday season, ..."]
+        sentence = random.choice(contexts) + ' ' + sentence
+        sentences[i] = sentence
+    elif random.random() < 0.1:
+        # Use more colloquial language
+        colloquialisms = ["It's a piece of cake.", "Let's break a leg.", "It's raining cats and dogs.", "The cat's out of the bag."]
+        sentence = sentence.replace(random.choice(common_words), random.choice(colloquialisms))
+        sentences[i] = sentence
+
+# Rephrase the sentences using a more natural-sounding structure
+for i, sentence in enumerate(sentences):
+    if random.random() < 0.1:
+        new_sentence = rephrase_sentence(sentence, ai_text)
+        sentences[i] = new_sentence
+
+humanized_text = '. '.join(sentences) + '.'
+
+# Save the humanized text to the 'human.txt' file
+with open('human.txt', 'w') as file:
+    file.write(humanized_text)
+
+print("Humanized text saved to 'human.txt'.")
+
+def rephrase_sentence(sentence, ai_text):
+    # Use the FuzzyWuzzy library to find similar sentences in the AI-generated text
+    best_match = max([fuzz.ratio(sentence, s) for s in sent_tokenize(ai_text)])
+    if best_match > 80:
+        # If a similar sentence is found, rephrase it using a different structure
+        new_sentence = ' '.join(random.sample(word_tokenize(sentence), len(word_tokenize(sentence))))
+        return new_sentence
+    else:
+        return sentence
